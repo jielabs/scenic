@@ -24,6 +24,29 @@
 
 # In[2]:
 
+import sys
+from scenic.projects.owl_vit.configs import clip_b32, clip_b16, clip_l14
+
+try:
+    model = sys.argv[1]
+except IndexError:
+    model='b32'  # small
+    #model='b16'
+    #model='l14'  # large
+
+if model == 'b16':
+    config = clip_b16.get_config()
+    checkpoint_path = './clip_vit_b16_6171dab'
+elif model == 'b32':
+    config = clip_b32.get_config()
+    checkpoint_path = './clip_vit_b32_b0203fc'
+elif model == 'l14':
+    config = clip_l14.get_config()
+    checkpoint_path = './clip_vit_l14_d83d374'
+else:
+    raise Exception(f'Cannot find {model}. Must be one of b16, b32, l14')
+
+print(model, checkpoint_path)
 
 import os
 
@@ -31,21 +54,17 @@ import jax
 from matplotlib import pyplot as plt
 import numpy as np
 from scenic.projects.owl_vit import models
-from scenic.projects.owl_vit.configs import clip_b32, clip_l14
 from scipy.special import expit as sigmoid
 import skimage
 from skimage import io as skimage_io
 from skimage import transform as skimage_transform
+import time
 
+begin_ts = time.time()
 
 # # Choose config
 
 # In[3]:
-
-
-config = clip_b32.get_config()
-# config = clip_l14.get_config()
-
 
 # # Load the model and variables
 
@@ -67,8 +86,6 @@ config.init_from.checkpoint_path
 # In[6]:
 
 
-checkpoint_path = './clip_vit_b32_b0203fc'
-# checkpoint_path = './clip_vit_l14_d83d374'
 
 variables = module.load_variables(checkpoint_path)
 
@@ -215,6 +232,11 @@ for score, box, label in zip(scores, boxes, labels):
           'boxstyle': 'square,pad=.3'
       })
 
+plt.show()
+plt.savefig('vit.png')
+
+end_ts = time.time()
+print('time', end_ts-begin_ts)
 
 # In[ ]:
 
